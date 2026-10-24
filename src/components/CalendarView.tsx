@@ -27,7 +27,7 @@ export default function CalendarView({ onClose }: CalendarViewProps) {
         </p>
 
         {/* 空状态示意 */}
-        <div className="w-full max-w-xs mt-4 p-4 rounded-xl border border-dashed border-night-700/60 bg-night-800/50 text-center">
+        <div className="w-full max-w-xs mt-4 p-4 rounded-xl border border-night-700/60 bg-night-800/50 text-center">
           <p className="text-xs text-foreground/30">
             今晚是你和这座城市的第一页
           </p>

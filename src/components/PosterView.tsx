@@ -22,16 +22,16 @@ export default function PosterView({
 
       {/* 海报占位区 */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-5">
-        <div className="w-full max-w-sm aspect-[3/4] rounded-2xl border border-dashed border-neon-pink/40 bg-night-800 flex flex-col items-center justify-center space-y-4 p-8">
+        <div className="w-full max-w-sm aspect-[3/4] rounded-2xl border border-neon-pink/30 bg-night-800 flex flex-col items-center justify-center space-y-4 p-8">
           <div className="w-20 h-20 rounded-full bg-neon-pink/10 border border-neon-pink/30 flex items-center justify-center">
             <span className="text-3xl">🎆</span>
           </div>
           <p className="text-sm text-neon-pink/60 text-center">
-            AI 正在生成你的今夜海报…
+            今夜的故事，正在被写成海报…
           </p>
-          <div className="text-xs text-foreground/25 text-center space-y-1">
+          <div className="text-xs text-foreground/35 text-center space-y-1">
             <p>轨迹 · 插图 · 心情 · 故事</p>
-            <p>四件套即将上线</p>
+            <p>逛一圈再回来，AI 会记住你的一切</p>
           </div>
         </div>
       </div>

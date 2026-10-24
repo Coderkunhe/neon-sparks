@@ -11,16 +11,16 @@ import { initialDanmaku } from "@/data/danmaku";
 /** MapView 禁用 SSR —— Leaflet 是纯浏览器库 */
 const MapView = dynamic(() => import("./MapView"), { ssr: false });
 
-/** AI 弹幕生成池 */
+/** AI 弹幕生成池 —— 街坊闲谈，不与初始种子重复 */
 const AI_SPAWN_POOL = [
   "好香的味道飘了半条街…",
-  "今晚人好多，整条街都活了",
-  "听说这边的招牌菜绝了",
-  "风里都是烤肉的味道🍢",
-  "又有人组搭子了，真热闹",
   "下小雨了，大家撑伞继续逛",
   "今晚的月光配这条街正好",
   "看着这些灯，想家了",
+  "路过的阿姨说这家糖水甜到心里去了",
+  "听到铁板滋滋响就走不动路",
+  "街头卖唱的哥们今天弹的是《成都》",
+  "闻到关东煮的汤底就知道冬天来了",
 ];
 
 interface StreetViewProps {
@@ -80,7 +80,7 @@ export default function StreetView({
   return (
     <div className="flex flex-col h-full">
       {/* 顶部栏悬浮在地图上方 */}
-      <TopBar title="霓虹夜市" onCalendarClick={onOpenCalendar} />
+      <TopBar title="探寻霓虹中的烟火" onCalendarClick={onOpenCalendar} />
 
       {/* 地图区：MapView + 弹幕冒泡层 */}
       <div className="flex-1 relative bg-night-900">
@@ -112,12 +112,12 @@ export default function StreetView({
         <button
           type="button"
           onClick={onEndNight}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-orange via-neon-pink to-lantern text-white font-bold text-base tracking-wider neon-text active:scale-[0.98] transition-transform"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-orange to-neon-pink text-white font-bold text-base tracking-wider neon-text-white active:scale-[0.98] transition-transform"
         >
           🌙 结束今夜
         </button>
-        <p className="text-center text-xs text-foreground/25 mt-2">
-          逛逛摊位 · 发发弹幕 · 组个搭子
+        <p className="text-center text-xs text-foreground/45 mt-2">
+          走进来，你就是这条街的一部分
         </p>
       </footer>
     </div>

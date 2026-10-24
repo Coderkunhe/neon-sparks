@@ -53,7 +53,7 @@ export default function StallDetailPanel({
       />
 
       {/* 面板 */}
-      <div className="relative pointer-events-auto animate-slide-up rounded-t-2xl bg-night-900/95 backdrop-blur-xl border-t border-night-700/60 max-h-[55vh] flex flex-col">
+      <div className="relative pointer-events-auto animate-slide-up rounded-t-2xl bg-night-900/95 backdrop-blur-xl border-t border-night-700/60 max-h-[65vh] flex flex-col">
         {/* 拖拽条 */}
         <div className="flex justify-center pt-2 pb-1">
           <div className="w-10 h-1 rounded-full bg-night-600" />
@@ -86,7 +86,7 @@ export default function StallDetailPanel({
         {/* 弹幕流 */}
         <div className="px-4 mb-3">
           <p className="text-xs text-neon-gold/60 mb-1.5 font-hand tracking-wide">
-            摊位弹幕
+            摊前闲聊
           </p>
           <div className="space-y-1 max-h-28 overflow-y-auto">
             {recentDanmaku.length === 0 && (
@@ -148,10 +148,10 @@ export default function StallDetailPanel({
           {/* 组搭子占位 */}
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-full border border-dashed border-neon-pink/30 text-neon-pink/50 text-xs hover:border-neon-pink/60 hover:text-neon-pink/70 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-full border border-neon-pink/30 text-neon-pink/50 text-xs hover:border-neon-pink/60 hover:text-neon-pink/70 transition-colors"
           >
             <Users size={14} />
-            <span>组搭子 · 即将上线</span>
+            <span>发起饭搭子 · AA 拼个桌</span>
           </button>
         </div>
       </div>
