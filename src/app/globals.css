@@ -19,7 +19,7 @@
   --color-lantern: #e63946;
 
   /* 手写字体（烟火气）—— CDN 加载，离线降级到系统楷体 */
-  --font-hand: "Zhi Mang Xing", "Ma Shan Zheng", "Kaiti SC", "STKaiti",
+  --font-hand: "Ma Shan Zheng", "Zhi Mang Xing", "Kaiti SC", "STKaiti",
     cursive;
 }
 
