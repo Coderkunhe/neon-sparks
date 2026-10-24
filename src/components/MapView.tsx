@@ -43,7 +43,7 @@ export default function MapView({
 
       const map = L.map(container, {
         center: [31.1995, 121.6279],
-        zoom: 17,
+        zoom: 18,
         zoomControl: true,
         attributionControl: false,
       });
