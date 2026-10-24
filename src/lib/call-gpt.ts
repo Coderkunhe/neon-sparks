@@ -30,12 +30,14 @@ export async function callGpt(
   input: AIObserverInput
 ): Promise<ObserverResult> {
   const apiKey = process.env.OPENAI_API_KEY;
+  const baseURL = process.env.OPENAI_BASE_URL || undefined;
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY 未配置");
   }
 
   const { default: OpenAI } = await import("openai");
-  const client = new OpenAI({ apiKey });
+  const client = new OpenAI({ apiKey, baseURL });
 
   const userContent = JSON.stringify(
     {
@@ -58,7 +60,7 @@ export async function callGpt(
   try {
     const completion = await client.chat.completions.create(
       {
-        model: "gpt-4o-mini",
+        model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userContent },
