@@ -1,26 +1,169 @@
 @import "tailwindcss";
 
+/* ===== 霓虹烟火 主题 ===== */
+
+@theme {
+  /* 底色：深夜蓝黑 */
+  --color-night-950: #0a0a14;
+  --color-night-900: #11111f;
+  --color-night-800: #1a1a2e;
+  --color-night-700: #23233a;
+
+  /* 霓虹暖色：烟火 */
+  --color-neon-orange: #ff9a3c;
+  --color-neon-pink: #ff5c7a;
+  --color-neon-gold: #ffd166;
+  --color-neon-red: #ff4757;
+
+  /* 灯笼红 / 主色 */
+  --color-lantern: #e63946;
+
+  /* 手写字体（烟火气）—— CDN 加载，离线降级到系统楷体 */
+  --font-hand: "Zhi Mang Xing", "Ma Shan Zheng", "Kaiti SC", "STKaiti",
+    cursive;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0a0a14;
+  --foreground: #f5f0e8;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 霓虹发光文本 */
+.neon-text {
+  text-shadow:
+    0 0 6px rgba(255, 154, 60, 0.8),
+    0 0 20px rgba(255, 92, 122, 0.5);
+}
+
+/* 摊位发光圆点 */
+.neon-dot {
+  box-shadow:
+    0 0 8px rgba(255, 209, 102, 0.9),
+    0 0 24px rgba(255, 92, 122, 0.6);
+}
+
+/* 弹幕滚动动画 */
+@keyframes danmaku-scroll {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-danmaku {
+  animation: danmaku-scroll linear infinite;
+}
+
+/* ===== Leaflet 暗色底图（OSM 反色滤镜，无需 key） ===== */
+.leaflet-dark .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.5);
+}
+.leaflet-dark .leaflet-container {
+  background: #0a0a14;
+}
+/* 缩放控件暗色适配 */
+.leaflet-dark .leaflet-control-zoom a {
+  background: rgba(17, 17, 31, 0.9) !important;
+  color: rgba(255, 209, 102, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.leaflet-dark .leaflet-control-zoom a:hover {
+  background: rgba(35, 35, 58, 0.95) !important;
+  color: #ffd166 !important;
+}
+
+/* 弹幕水平滚动动画（摊位高度飞过） */
+@keyframes danmaku-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100vw - 400px));
+  }
+}
+
+/* ===== 商户摊位脉冲圈 ===== */
+/* 中心实心核 + 双层外圈脉冲扩散，体现"摊在呼吸、是活的" */
+.stall-pulse {
+  position: relative;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.stall-pulse-core {
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--stall-color, #ff9a3c);
+  box-shadow:
+    0 0 6px var(--stall-color, #ff9a3c),
+    0 0 16px var(--stall-color, #ff9a3c);
+}
+.stall-pulse-ring {
+  position: absolute;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--stall-color, #ff9a3c);
+  animation: stall-breathe 2.6s ease-out infinite;
+}
+.stall-pulse-ring:nth-child(2) {
+  animation-delay: 1.3s;
+}
+/* 选中态：核心放大 + 光晕增强 */
+.stall-pulse.stall-selected .stall-pulse-core {
+  width: 16px; height: 16px;
+  box-shadow:
+    0 0 8px var(--stall-color, #ff9a3c),
+    0 0 20px var(--stall-color, #ff9a3c),
+    0 0 40px var(--stall-color, #ff9a3c);
+}
+@keyframes stall-breathe {
+  0%   { transform: scale(0.35); opacity: 0.85; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+/* ===== 用户定位导航箭头 ===== */
+.nav-arrow {
+  position: relative;
+  width: 28px; height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 8px rgba(255, 71, 87, 0.5));
+}
+
+/* 摊位 tooltip */
+.stall-tooltip {
+  background: rgba(10, 10, 20, 0.88) !important;
+  border: 1px solid rgba(255, 209, 102, 0.35) !important;
+  color: #ffd166 !important;
+  font-size: 12px !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+  font-family: inherit !important;
+  box-shadow: 0 0 12px rgba(255, 154, 60, 0.3) !important;
+}
+.stall-tooltip::before {
+  border-top-color: rgba(255, 209, 102, 0.35) !important;
+}
+
+/* ===== 底部 sheet 滑入动画 ===== */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
