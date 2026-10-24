@@ -2,8 +2,9 @@ import type { ObserverResult } from "./ai-observer";
 import type { AIObserverInput } from "@/types";
 
 /**
- * GPT 文本叙事 —— 调用 OpenAI Chat API，把行为轨迹转成叙事精华。
+ * GPT 文本叙事 —— 调用 OpenAI 兼容 Chat API，把行为轨迹转成叙事精华。
  * 在服务端（API Route）执行，key 不出浏览器。
+ * 用原生 fetch 直连，兼容任何 OpenAI 协议代理（OpenDev / Azure / 官方）。
  */
 
 const SYSTEM_PROMPT = `你是「探寻霓虹中的烟火」这条夜市街的观察者。
@@ -30,14 +31,14 @@ export async function callGpt(
   input: AIObserverInput
 ): Promise<ObserverResult> {
   const apiKey = process.env.OPENAI_API_KEY;
-  const baseURL = process.env.OPENAI_BASE_URL || undefined;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const baseURL = (process.env.OPENAI_BASE_URL || "https://api.openai.com").replace(
+    /\/+$/,
+    ""
+  );
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY 未配置");
   }
-
-  const { default: OpenAI } = await import("openai");
-  const client = new OpenAI({ apiKey, baseURL });
 
   const userContent = JSON.stringify(
     {
@@ -55,23 +56,37 @@ export async function callGpt(
   );
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const completion = await client.chat.completions.create(
-      {
+    const res = await fetch(`${baseURL}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
         model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userContent },
         ],
-        response_format: { type: "json_object" },
         temperature: 0.85,
-      },
-      { signal: controller.signal }
-    );
+      }),
+      signal: controller.signal,
+    });
 
-    const raw = completion.choices[0]?.message?.content ?? "";
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+    }
+
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const raw = data.choices?.[0]?.message?.content ?? "";
+    if (!raw) throw new Error("GPT 返回空内容");
+
     const parsed = JSON.parse(raw) as Partial<ObserverResult>;
 
     if (
