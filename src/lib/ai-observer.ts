@@ -16,11 +16,11 @@ export interface ObserverResult {
 
 /**
  * AI 观察器 —— 基于行为轨迹推断今夜心情与叙事。
- * 当前为规则引擎 mock 实现，真 LLM 接入时替换此函数。
+ * 优先调用 OpenAI GPT（via /api/observe），失败时降级到规则引擎 mock。
  *
  * 规则：逛摊数=基调，弹幕数=互动感，搭子=温度，天气/时间=氛围。
  */
-export function observe(input: AIObserverInput): ObserverResult {
+export function observeMock(input: AIObserverInput): ObserverResult {
   const { trail, danmakuLog, buddyStory, longestStayName, time, weather, weekday } =
     input;
 
@@ -136,4 +136,26 @@ export function buildObserverInput(
     weather,
     weekday,
   };
+}
+
+/**
+ * 异步 AI 观察 —— 首选 GPT，失败降级到规则引擎。
+ * PosterView 调用此函数。
+ */
+export async function observe(input: AIObserverInput): Promise<ObserverResult> {
+  try {
+    const res = await fetch("/api/observe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()) as ObserverResult & { error?: string };
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn("[ai-observer] GPT 调用失败，降级到 mock:", msg);
+    return observeMock(input);
+  }
 }

@@ -6,6 +6,21 @@
 
 ## 2026-10-24
 
+### 18:15 — API Route + OpenAI GPT 文本叙事接入
+
+**后端技术选型：Next.js API Route（Route Handler）**
+- What: 新建 `src/app/api/observe/route.ts` POST 端点 + `src/lib/call-gpt.ts` GPT 调用封装
+- Why: 替代纯规则引擎 mock，让 AI 真正"观察"用户行为。Next.js API Route 零新增部署单元，同栈 TS，server 端安全藏 key
+- 降级策略：GPT 失败/超时/key 未配置 → 自动 fallback 到规则引擎 `observeMock()`，页面永不自屏
+- Files: `src/app/api/observe/route.ts`, `src/lib/call-gpt.ts`, `src/lib/ai-observer.ts`, `src/components/PosterView.tsx`, `package.json`, `.env.example`
+
+**ai-observer 异步改造**
+- `observe()` 从同步规则引擎 → `async fetch /api/observe`，失败降级 `observeMock()`
+- 原规则引擎保留为 `observeMock()`（fallback）
+- PosterView: `useMemo(sync)` → `useEffect(async) + useState<ObserverResult | null>`
+- loading 状态：GPT 调用中显示「AI 正在为你写故事...」+ 🎆 脉冲动画
+- Files: `src/lib/ai-observer.ts`, `src/components/PosterView.tsx`
+
 ### 18:00 — UI 打磨 6 项一次性修复（story-line 验收通过后）
 
 **1. 空轨迹 edge case**

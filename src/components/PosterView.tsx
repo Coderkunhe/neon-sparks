@@ -4,6 +4,7 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import TopBar from "./TopBar";
 import type { TrailEntry } from "@/types";
 import { observe, buildObserverInput } from "@/lib/ai-observer";
+import type { ObserverResult } from "@/lib/ai-observer";
 import { generatePoster } from "@/lib/poster-generator";
 import { saveMemory, generateMemoryId } from "@/lib/memory-store";
 
@@ -25,26 +26,30 @@ export default function PosterView({
 }: PosterViewProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [observerResult, setObserverResult] = useState<ObserverResult | null>(null);
   const generatedRef = useRef(false);
 
-  // AI 观察器输出
-  const observerResult = useMemo(() => {
+  // AI 观察器 —— 异步调 GPT，降级到 mock
+  useEffect(() => {
+    let cancelled = false;
     const input = buildObserverInput(trail);
-    return observe(input);
+    observe(input).then((result) => {
+      if (!cancelled) setObserverResult(result);
+    });
+    return () => { cancelled = true; };
   }, [trail]);
 
-  // 生成海报 Canvas → base64
+  // 生成海报 Canvas → base64（observerResult 就绪后）
   useEffect(() => {
-    if (generatedRef.current) return;
+    if (!observerResult || generatedRef.current) return;
     generatedRef.current = true;
 
     const now = new Date();
     const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
 
-    // Canvas 生成在浏览器环境执行
     const result = generatePoster(observerResult.tagline, dateStr);
     setImageUrl(result.imageUrl);
-  }, [observerResult.tagline]);
+  }, [observerResult]);
 
   // 提取展示数据
   const timeline = useMemo(() => {
@@ -56,6 +61,7 @@ export default function PosterView({
   }, [trail]);
 
   const handleSave = () => {
+    if (!observerResult) return;
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
@@ -112,37 +118,44 @@ export default function PosterView({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-night-800 flex items-center justify-center">
-              <span className="text-foreground/30 text-sm">烟火正在绽放...</span>
+            <div className="w-full h-full bg-night-800 flex flex-col items-center justify-center gap-2">
+              <span className="text-neon-gold/50 text-2xl animate-pulse">🎆</span>
+              <span className="text-foreground/30 text-sm">
+                {observerResult ? "烟火正在绽放..." : "AI 正在为你写故事..."}
+              </span>
             </div>
           )}
 
           {/* Tagline 叠加层 */}
-          <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-night-950/90 via-night-950/40 to-transparent">
-            <p className="text-white/90 text-lg font-hand tracking-wider leading-relaxed text-center">
-              {observerResult.tagline}
-            </p>
-          </div>
+          {observerResult && (
+            <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-night-950/90 via-night-950/40 to-transparent">
+              <p className="text-white/90 text-lg font-hand tracking-wider leading-relaxed text-center">
+                {observerResult.tagline}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* AI 心情 */}
-        <div className="px-5 mt-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neon-gold/70 font-hand tracking-wide">
-              AI 感受到的心情
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-foreground/80 leading-relaxed">
-            {observerResult.feeling}
-          </p>
-        </div>
+        {/* AI 心情 + 叙事（observerResult 就绪后） */}
+        {observerResult && (
+          <>
+            <div className="px-5 mt-4">
+              <span className="text-xs text-neon-gold/70 font-hand tracking-wide">
+                AI 感受到的心情
+              </span>
+              <p className="mt-1 text-sm text-foreground/80 leading-relaxed">
+                {observerResult.feeling}
+              </p>
+            </div>
 
-        {/* 叙事段落 */}
-        <div className="px-5 mt-3">
-          <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
-            {observerResult.narrative}
-          </p>
-        </div>
+            {/* 叙事段落 */}
+            <div className="px-5 mt-3">
+              <p className="text-sm text-foreground/75 leading-relaxed">
+                {observerResult.narrative}
+              </p>
+            </div>
+          </>
+        )}
 
         {/* 轨迹时间线 */}
         <div className="px-5 mt-5 mb-2">
