@@ -6,6 +6,38 @@
 
 ## 2026-10-24
 
+### 18:00 — UI 打磨 6 项一次性修复（story-line 验收通过后）
+
+**1. 空轨迹 edge case**
+- What: trail 无 viewed 时「结束今夜」按钮置灰 + tooltip "先去逛逛摊位吧"，底部文案也切换为"还没逛逛呢，点个摊位进去看看吧"
+- Why: 不逛任何摊直接点结束会生成"0个摊位"的尴尬海报
+- File: `src/components/StreetView.tsx`
+
+**2. weather 反向解析修复**
+- What: `ObserverResult` 新增 `weather` 字段，`observe()` 直接返回天气值，`PosterView.handleSave` 直接取值
+- Why: 原来用正则从 narrative 反抽天气 `/小雨|微风|晴夜|薄雾|月明/`，耦合脆、不完整
+- Files: `src/lib/ai-observer.ts`, `src/types/index.ts`, `src/components/PosterView.tsx`
+
+**3. longestStay 语义统一**
+- What: `AIObserverInput.longestStay` 拆为 `longestStayName` + `longestStayDuration`，observer 返回清晰双字段
+- Why: 原来同一字段在 observer 里是摊位名、在 PosterView 里是格式化字符串，同名不同义
+- Files: `src/types/index.ts`, `src/lib/ai-observer.ts`
+
+**4. JSON 导出/导入**
+- What: `memory-store.ts` 新增 `exportMemories()` / `importMemories()`，CalendarView 加导出/导入按钮（`.json` 文件下载 + FileReader 上传）
+- Why: localStorage 做运行时存储（正确），JSON 文件做传输通道，补齐"可配置、可传输"闭环
+- Files: `src/lib/memory-store.ts`, `src/components/CalendarView.tsx`
+
+**5. 日历图标重设计**
+- What: TopBar 右侧按钮从纯图标圆框 → pill badge（Footprints 图标 + "记忆" 文字），`bg-neon-gold/5 + border-neon-gold/25`
+- Why: 纯图标可发现性弱，pill badge 是更现代的入口形态
+- File: `src/components/TopBar.tsx`
+
+**6. 字体大小调整**
+- What: TopBar 标题 `text-lg` → `text-xl`，PosterView 叙事段落 `text-xs` → `text-sm` + `opacity:45` → `opacity:75`
+- Why: 字号太小配合霓虹发光会糊，标题和正文拉大一档可读性明显提升
+- Files: `src/components/TopBar.tsx`, `src/components/PosterView.tsx`
+
 ### 17:00 — 故事线全链路实现（①→②→③→④→⑤→⑥）
 
 **① 轨迹采集器（StreetView + StallDetailPanel + page.tsx 改造）**

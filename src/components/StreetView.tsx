@@ -129,8 +129,12 @@ export default function StreetView({
     setDanmakuPool((prev) => [...prev.slice(-300), newD]);
   }, []);
 
+  /** 检查是否有逛过的摊位 */
+  const hasViewed = trail.some((e) => e.action === "viewed");
+
   /** 结束今夜 —— 为每个逛过的摊位补停留时长，再交给海报 */
   const handleEndNight = useCallback(() => {
+    if (!hasViewed) return;
     const viewedIds = trail
       .filter((e) => e.action === "viewed")
       .map((e) => e.stallId);
@@ -187,12 +191,18 @@ export default function StreetView({
         <button
           type="button"
           onClick={handleEndNight}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-orange to-neon-pink text-white font-bold text-base tracking-wider neon-text-white active:scale-[0.98] transition-transform"
+          disabled={!hasViewed}
+          title={!hasViewed ? "先去逛逛摊位吧" : "结束今晚的烟火之旅"}
+          className={`w-full py-3 rounded-xl font-bold text-base tracking-wider active:scale-[0.98] transition-all ${
+            hasViewed
+              ? "bg-gradient-to-r from-neon-orange to-neon-pink text-white neon-text-white cursor-pointer"
+              : "bg-night-800 text-foreground/25 cursor-not-allowed"
+          }`}
         >
           🌙 结束今夜
         </button>
         <p className="text-center text-xs text-foreground/45 mt-2">
-          走进来，你就是这条街的一部分
+          {hasViewed ? "走进来，你就是这条街的一部分" : "还没逛逛呢，点个摊位进去看看吧"}
         </p>
       </footer>
     </div>

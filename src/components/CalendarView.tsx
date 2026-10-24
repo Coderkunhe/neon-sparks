@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useMemo, useRef } from "react";
+import { ChevronLeft, ChevronRight, Download, Upload } from "lucide-react";
 import TopBar from "./TopBar";
-import { loadMemoriesByMonth, loadMemoryByDate } from "@/lib/memory-store";
+import { loadMemoriesByMonth, loadMemoryByDate, exportMemories, importMemories } from "@/lib/memory-store";
 import type { NightMemory } from "@/types";
 
 interface CalendarViewProps {
@@ -27,6 +27,9 @@ export default function CalendarView({ onClose }: CalendarViewProps) {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-12
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const monthLabel = `${year}年${month}月`;
 
@@ -108,6 +111,42 @@ export default function CalendarView({ onClose }: CalendarViewProps) {
     if (mem) {
       setSelectedDate(date);
     }
+  };
+
+  /** 导出全部记忆为 JSON 文件 */
+  const handleExport = () => {
+    const json = exportMemories();
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    a.download = `neon-sparks-memories-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  /** 导入 JSON 文件 */
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImportMsg(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const count = importMemories(reader.result as string);
+        setImportMsg(`✅ 成功导入 ${count} 条记忆`);
+        setRefreshKey((k) => k + 1);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "导入失败";
+        setImportMsg(`❌ ${msg}`);
+      }
+    };
+    reader.readAsText(file);
+    // reset so same file can be re-imported
+    e.target.value = "";
   };
 
   return (
@@ -235,6 +274,40 @@ export default function CalendarView({ onClose }: CalendarViewProps) {
               </p>
             </div>
           )}
+
+          {/* 导出/导入操作 */}
+          <div className="px-2 mt-3 pb-4">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-night-700/60 text-foreground/45 text-xs hover:text-neon-gold hover:border-neon-gold/50 transition-colors"
+              >
+                <Download size={14} />
+                导出记忆
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-night-700/60 text-foreground/45 text-xs hover:text-neon-gold hover:border-neon-gold/50 transition-colors"
+              >
+                <Upload size={14} />
+                导入记忆
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </div>
+            {importMsg && (
+              <p className={`text-center text-xs mt-2 ${importMsg.startsWith("✅") ? "text-green-400/70" : "text-red-400/70"}`}>
+                {importMsg}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

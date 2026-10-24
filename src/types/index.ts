@@ -106,7 +106,10 @@ export interface AIObserverInput {
   trail: TrailEntry[];
   danmakuLog: string[];
   buddyStory: string | null;
-  longestStay: string;
+  /** 停留最久的摊位名 */
+  longestStayName: string;
+  /** 停留最久的时长，如 "12分钟" */
+  longestStayDuration: string;
   time: string;
   weather: string;
   weekday: string;

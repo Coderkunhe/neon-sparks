@@ -75,7 +75,7 @@ export default function PosterView({
       id: generateMemoryId(),
       date: dateStr,
       time: timeStr,
-      weather: observerResult.narrative.match(/小雨|微风|晴夜|薄雾|月明/)?.[0] ?? "晴夜微凉",
+      weather: observerResult.weather,
       weekday: weekdays[now.getDay()],
       trail,
       poster: {
@@ -139,7 +139,7 @@ export default function PosterView({
 
         {/* 叙事段落 */}
         <div className="px-5 mt-3">
-          <p className="text-xs text-foreground/45 leading-relaxed">
+          <p className="mt-1 text-sm text-foreground/75 leading-relaxed">
             {observerResult.narrative}
           </p>
         </div>

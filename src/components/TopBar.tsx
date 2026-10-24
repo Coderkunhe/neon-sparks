@@ -21,7 +21,7 @@ export default function TopBar({
 }: TopBarProps) {
   return (
     <header className="relative z-30 flex items-center justify-between px-4 h-14 bg-night-950/85 backdrop-blur-md border-b border-night-700/60">
-      <h1 className="font-hand text-lg tracking-wider text-neon-gold neon-text leading-none truncate max-w-[70vw]">
+      <h1 className="font-hand text-xl tracking-wider text-neon-gold neon-text leading-none truncate max-w-[70vw]">
         {title}
       </h1>
 
@@ -30,9 +30,10 @@ export default function TopBar({
           type="button"
           onClick={onCalendarClick}
           aria-label="打开足迹"
-          className="flex items-center justify-center w-9 h-9 rounded-full border border-night-700/60 text-neon-gold/90 hover:text-neon-gold hover:border-neon-gold/60 transition-colors"
+          className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-neon-gold/25 bg-neon-gold/5 text-neon-gold/80 hover:text-neon-gold hover:border-neon-gold/50 hover:bg-neon-gold/10 transition-all"
         >
-          <Footprints size={19} strokeWidth={1.8} />
+          <Footprints size={15} strokeWidth={1.5} />
+          <span className="text-[11px] font-hand tracking-wider">记忆</span>
         </button>
       )}
 

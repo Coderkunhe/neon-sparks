@@ -48,3 +48,29 @@ export function loadMemoryByDate(date: string): NightMemory | undefined {
 export function generateMemoryId(): string {
   return `mem-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
+/** 导出全部记忆为 JSON 字符串 */
+export function exportMemories(): string {
+  return JSON.stringify(loadMemories(), null, 2);
+}
+
+/** 导入记忆（JSON 字符串），逐条保存，同日期覆盖。返回导入条数。 */
+export function importMemories(json: string): number {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json);
+  } catch {
+    throw new Error("JSON 格式无效");
+  }
+  if (!Array.isArray(parsed)) throw new Error("数据格式不是数组");
+
+  const memories = parsed.filter(
+    (m): m is NightMemory =>
+      !!m && typeof m === "object" && "date" in m && "trail" in m && "poster" in m
+  );
+
+  for (const memory of memories) {
+    saveMemory(memory);
+  }
+  return memories.length;
+}

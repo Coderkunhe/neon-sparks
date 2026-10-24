@@ -8,6 +8,10 @@ export interface ObserverResult {
   feeling: string;
   /** 完整叙事段落 */
   narrative: string;
+  /** 天气，由 observer 直接返回，下游取值不依赖正则 */
+  weather: string;
+  /** 停留最久的摊位名 */
+  longestStayName: string;
 }
 
 /**
@@ -17,7 +21,7 @@ export interface ObserverResult {
  * 规则：逛摊数=基调，弹幕数=互动感，搭子=温度，天气/时间=氛围。
  */
 export function observe(input: AIObserverInput): ObserverResult {
-  const { trail, danmakuLog, buddyStory, longestStay, time, weather, weekday } =
+  const { trail, danmakuLog, buddyStory, longestStayName, time, weather, weekday } =
     input;
 
   const viewedCount = trail.filter((e) => e.action === "viewed").length;
@@ -63,7 +67,7 @@ export function observe(input: AIObserverInput): ObserverResult {
     `在${weather}的${weekday}夜，${tone}`,
     `${tone}的夜晚，烟火知道你来过`,
     `${weather}吹不散的，是这条街的温度`,
-    `${tone}，${longestStay || "每个摊位"}都留下了故事`,
+    `${tone}，${longestStayName || "每个摊位"}都留下了故事`,
     `一个人也好，一条街也好，今晚都是你的`,
     `${weekday}的夜晚，被${danmakuCount}条弹幕和${viewedCount}个摊位填满`,
     `走过${viewedCount}个摊位，留下${danmakuCount}句话，刚刚好`,
@@ -77,13 +81,13 @@ export function observe(input: AIObserverInput): ObserverResult {
     `你沿着夜市长街，${tone}——一共${viewedCount}个摊位，每个都有它的故事。`,
     interaction + "。",
     buddyPart,
-    longestStay ? `${longestStay}是你今晚待得最久的地方——大概是真的喜欢吧。` : "",
+    longestStayName ? `${longestStayName}是你今晚待得最久的地方——大概是真的喜欢吧。` : "",
     `离开的时候，街灯还在亮着。明天它还会在这里，但今晚的烟火，只属于你。`,
   ]
     .filter(Boolean)
     .join("");
 
-  return { tagline, feeling, narrative };
+  return { tagline, feeling, narrative, weather, longestStayName };
 }
 
 /**
@@ -102,14 +106,16 @@ export function buildObserverInput(
     : null;
 
   const stayedEntries = trail.filter((e) => e.action === "stayed");
-  const longestStay =
+  const longestStayEntry =
     stayedEntries.length > 0
       ? stayedEntries.reduce((max, e) => {
           const min = parseInt(e.detail ?? "0", 10);
           const maxMin = parseInt(max.detail ?? "0", 10);
           return min > maxMin ? e : max;
-        }).stallName
-      : "";
+        })
+      : null;
+  const longestStayName = longestStayEntry?.stallName ?? "";
+  const longestStayDuration = longestStayEntry?.detail ?? "";
 
   // mock 天气/时间/星期（后续可接真实数据）
   const weathers = ["小雨淅沥", "微风", "晴夜微凉", "薄雾", "月明星稀"];
@@ -124,7 +130,8 @@ export function buildObserverInput(
     trail,
     danmakuLog,
     buddyStory,
-    longestStay,
+    longestStayName,
+    longestStayDuration,
     time,
     weather,
     weekday,
