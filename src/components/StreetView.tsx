@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import TopBar from "./TopBar";
 import DanmakuLayer from "./DanmakuLayer";
 import StallDetailPanel from "./StallDetailPanel";
-import type { Danmaku } from "@/types";
+import type { Danmaku, TrailEntry } from "@/types";
 import { initialDanmaku } from "@/data/danmaku";
+import { stalls } from "@/data/stalls";
 
 /** MapView 禁用 SSR —— Leaflet 是纯浏览器库 */
 const MapView = dynamic(() => import("./MapView"), { ssr: false });
@@ -24,7 +25,7 @@ const AI_SPAWN_POOL = [
 ];
 
 interface StreetViewProps {
-  onEndNight: () => void;
+  onEndNight: (trail: TrailEntry[]) => void;
   onOpenCalendar: () => void;
 }
 
@@ -38,12 +39,37 @@ export default function StreetView({
 }: StreetViewProps) {
   const [selectedStallId, setSelectedStallId] = useState<string | null>(null);
   const [danmakuPool, setDanmakuPool] = useState<Danmaku[]>([...initialDanmaku]);
+  const [trail, setTrail] = useState<TrailEntry[]>([]);
   const counterRef = useRef(0);
   const mapRef = useRef<import("leaflet").Map | null>(null);
 
-  const handleStallClick = useCallback((id: string) => {
-    setSelectedStallId((prev) => (prev === id ? null : id));
+  /** 记录摊位浏览（同摊位只记一次） */
+  const recordStallView = useCallback((id: string) => {
+    setTrail((prev) => {
+      if (prev.some((e) => e.stallId === id && e.action === "viewed")) return prev;
+      const stall = stalls.find((s) => s.id === id);
+      return [
+        ...prev,
+        {
+          stallId: id,
+          stallName: stall?.name ?? id,
+          action: "viewed" as const,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+    });
   }, []);
+
+  const handleStallClick = useCallback(
+    (id: string) => {
+      setSelectedStallId((prev) => {
+        const next = prev === id ? null : id;
+        if (next) recordStallView(id);
+        return next;
+      });
+    },
+    [recordStallView]
+  );
 
   const handleClosePanel = useCallback(() => {
     setSelectedStallId(null);
@@ -59,9 +85,35 @@ export default function StreetView({
         timestamp: Date.now(),
       };
       setDanmakuPool((prev) => [...prev, newDanmaku]);
+      const stall = stalls.find((s) => s.id === stallId);
+      setTrail((prev) => [
+        ...prev,
+        {
+          stallId,
+          stallName: stall?.name ?? stallId,
+          action: "danmaku" as const,
+          timestamp: new Date().toISOString(),
+          detail: content,
+        },
+      ]);
     },
     []
   );
+
+  /** 组搭子 —— 记录轨迹 */
+  const handleBuddy = useCallback((stallId: string) => {
+    const stall = stalls.find((s) => s.id === stallId);
+    setTrail((prev) => [
+      ...prev,
+      {
+        stallId,
+        stallName: stall?.name ?? stallId,
+        action: "buddied" as const,
+        timestamp: new Date().toISOString(),
+        detail: "joined",
+      },
+    ]);
+  }, []);
 
   /** 写入一条 AI 弹幕到唯一池 */
   const handleAiSpawn = useCallback(() => {
@@ -76,6 +128,28 @@ export default function StreetView({
     };
     setDanmakuPool((prev) => [...prev.slice(-300), newD]);
   }, []);
+
+  /** 结束今夜 —— 为每个逛过的摊位补停留时长，再交给海报 */
+  const handleEndNight = useCallback(() => {
+    const viewedIds = trail
+      .filter((e) => e.action === "viewed")
+      .map((e) => e.stallId);
+    // 去重 + 保持顺序
+    const uniqueViewed = Array.from(new Set(viewedIds));
+    const stayed: TrailEntry[] = uniqueViewed.map((id) => {
+      const stall = stalls.find((s) => s.id === id);
+      const minutes = 3 + Math.floor(Math.random() * 13); // 3-15 分钟
+      return {
+        stallId: id,
+        stallName: stall?.name ?? id,
+        action: "stayed" as const,
+        timestamp: new Date().toISOString(),
+        detail: `${minutes}分钟`,
+      };
+    });
+    // 按时间顺序合并：viewed/danmaku/buddied 保持原序，stayed 追加在末尾
+    onEndNight([...trail, ...stayed]);
+  }, [trail, onEndNight]);
 
   return (
     <div className="flex flex-col h-full">
@@ -103,6 +177,7 @@ export default function StreetView({
           stallId={selectedStallId}
           onClose={handleClosePanel}
           onSendDanmaku={handleSendDanmaku}
+          onBuddy={handleBuddy}
           danmakuForStall={danmakuPool.filter((d) => d.stallId === selectedStallId)}
         />
       )}
@@ -111,7 +186,7 @@ export default function StreetView({
       <footer className="flex-shrink-0 px-4 py-3 bg-night-950/90 backdrop-blur-md border-t border-night-700/60">
         <button
           type="button"
-          onClick={onEndNight}
+          onClick={handleEndNight}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-orange to-neon-pink text-white font-bold text-base tracking-wider neon-text-white active:scale-[0.98] transition-transform"
         >
           🌙 结束今夜

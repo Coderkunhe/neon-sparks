@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { AppView } from "@/types";
+import type { AppView, TrailEntry } from "@/types";
 import StreetView from "@/components/StreetView";
 import PosterView from "@/components/PosterView";
 import CalendarView from "@/components/CalendarView";
@@ -20,6 +20,13 @@ const pageVariants = {
  */
 export default function Home() {
   const [view, setView] = useState<AppView>("street");
+  /** 轨迹数据：从 street 采集，传给 poster 使用 */
+  const [trail, setTrail] = useState<TrailEntry[]>([]);
+
+  const handleEndNight = useCallback((t: TrailEntry[]) => {
+    setTrail(t);
+    setView("poster");
+  }, []);
 
   return (
     <main className="relative flex-1 flex flex-col w-full h-full overflow-hidden bg-night-950">
@@ -35,7 +42,7 @@ export default function Home() {
             className="absolute inset-0"
           >
             <StreetView
-              onEndNight={() => setView("poster")}
+              onEndNight={handleEndNight}
               onOpenCalendar={() => setView("calendar")}
             />
           </motion.div>
@@ -52,6 +59,7 @@ export default function Home() {
             className="absolute inset-0"
           >
             <PosterView
+              trail={trail}
               onSaveMemory={() => setView("calendar")}
               onBackToStreet={() => setView("street")}
             />

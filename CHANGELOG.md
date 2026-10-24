@@ -6,6 +6,38 @@
 
 ## 2026-10-24
 
+### 17:00 — 故事线全链路实现（①→②→③→④→⑤→⑥）
+
+**① 轨迹采集器（StreetView + StallDetailPanel + page.tsx 改造）**
+- What: StreetView 内嵌 `trail` 状态，采集点摊位→发弹幕→组搭子行为，结束今夜时补停留时长（3-15分钟随机mock）
+- Why: 「逛」的行为从未被记录，故事线跑不通的根因
+- Files: `src/components/StreetView.tsx`, `src/components/StallDetailPanel.tsx`, `src/app/page.tsx`
+
+**② AI 观察器（lib/ai-observer.ts 新建）**
+- What: 7维输入→叙事输出规则引擎，逛摊数=基调/弹幕数=互动感/搭子=温度/天气时间=氛围
+- Why: 「AI观察用户」而非「用户告诉AI」的产品核心体验
+- Files: `src/lib/ai-observer.ts`
+
+**③ 海报生成器（lib/poster-generator.ts 新建）**
+- What: Canvas 粒子霓虹烟火（暗夜渐变+天际线+多色粒子爆炸+物理模拟+地面光晕+tagline排版），输出base64 data URL，零外链
+- Why: 海报需要纯代码生成以支持离线/本地留存 + 高质量视觉呈现
+- Files: `src/lib/poster-generator.ts`
+
+**④ 记忆存储（lib/memory-store.ts 新建）**
+- What: localStorage CRUD，key: `neon-sparks-memories`，同日期覆盖
+- Why: demo单设备localStorage最可靠，不需要服务端
+- Files: `src/lib/memory-store.ts`
+
+**⑤ 海报视图实装（PosterView.tsx 重写）**
+- What: 轨迹→AI观察器→海报生成器完整链路，Canvas烟火主视觉+tagline+AI心情+叙事段落+轨迹时间线+弹幕记录+搭子故事+存入记忆
+- Why: 从占位符到完整功能
+- Files: `src/components/PosterView.tsx`
+
+**⑥ 日历视图实装（CalendarView.tsx 重写）**
+- What: 月份切换+7列网格+记忆卡片缩略+点击详情overlay，localStorage持久化
+- Why: 从占位符到完整功能，完成「我与城市的记忆」闭环
+- Files: `src/components/CalendarView.tsx`
+
 ### 16:30 — 标题可读性修复 + 足迹图标替换
 
 **标题字体可读性**

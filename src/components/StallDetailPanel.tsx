@@ -2,24 +2,26 @@
 
 import { useState } from "react";
 import { X, Send, Users } from "lucide-react";
-import type { Stall, Danmaku } from "@/types";
+import type { Danmaku } from "@/types";
 import { stalls } from "@/data/stalls";
 
 interface StallDetailPanelProps {
   stallId: string;
   onClose: () => void;
   onSendDanmaku: (stallId: string, content: string) => void;
+  onBuddy: (stallId: string) => void;
   danmakuForStall: Danmaku[];
 }
 
 /**
  * 摊位详情面板 —— 底部 sheet，滑入式。
- * 显示摊位信息 + 该摊位弹幕流 + 发弹幕输入 + 组搭子占位。
+ * 显示摊位信息 + 该摊位弹幕流 + 发弹幕输入 + 组搭子入口。
  */
 export default function StallDetailPanel({
   stallId,
   onClose,
   onSendDanmaku,
+  onBuddy,
   danmakuForStall,
 }: StallDetailPanelProps) {
   const stall = stalls.find((s) => s.id === stallId);
@@ -145,9 +147,10 @@ export default function StallDetailPanel({
             </button>
           </div>
 
-          {/* 组搭子占位 */}
+          {/* 组搭子 */}
           <button
             type="button"
+            onClick={() => onBuddy(stallId)}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-full border border-neon-pink/30 text-neon-pink/50 text-xs hover:border-neon-pink/60 hover:text-neon-pink/70 transition-colors"
           >
             <Users size={14} />
