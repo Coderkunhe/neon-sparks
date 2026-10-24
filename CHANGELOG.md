@@ -12,11 +12,11 @@
 - `--font-hand` 字体栈：`Zhi Mang Xing`（草书）移到 `Ma Shan Zheng`（马善政楷体）之后，楷体笔画粗、结构清晰，作为首选
 - TopBar 标题保持 `font-hand`，现在渲染为楷体手写风格而非草书
 - Why: 草书 + 霓虹发光叠加导致"探寻霓虹中的烟火"看不清，楷体保留烟火气同时确保可读
-- Files: `src/app/globals.css`
+- File: `src/app/globals.css`
 
 **足迹图标替换**
-- 日历入口图标 `CalendarDays` → `Footprints`，文案 `"我的烟火"` → `"我的足迹"`
-- Why: 用户提出"足迹"比"日历"更贴合"逛过的路、走过的街"的产品语义，图标与文案对齐
+- 日历入口图标 `CalendarDays` → `Footprints`，去文字只留纯图标
+- Owner 决策：标题 7 字已占半屏，右侧再放图标+4 字按钮视觉拥挤；纯图标 + 实边边框足够表达可交互性，且 Footprints 🦶 语义天然指向"我走过的路"
 - File: `src/components/TopBar.tsx`
 
 ### 16:10 — 产品owner文案+布局+UI商业标准优化

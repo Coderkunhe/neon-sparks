@@ -30,10 +30,9 @@ export default function TopBar({
           type="button"
           onClick={onCalendarClick}
           aria-label="打开足迹"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-night-700/60 text-neon-gold/90 hover:text-neon-gold hover:border-neon-gold/60 transition-colors"
+          className="flex items-center justify-center w-9 h-9 rounded-full border border-night-700/60 text-neon-gold/90 hover:text-neon-gold hover:border-neon-gold/60 transition-colors"
         >
-          <Footprints size={18} strokeWidth={1.8} />
-          <span className="text-xs">我的足迹</span>
+          <Footprints size={19} strokeWidth={1.8} />
         </button>
       )}
 
